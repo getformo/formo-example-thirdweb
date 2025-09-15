@@ -13,11 +13,8 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Formo Analytics x Thirdweb
+            Formo Analytics x Thirdweb Example
           </h1>
-          <p className="text-lg text-gray-600">
-            Example integration demonstrating wallet connectivity and analytics tracking
-          </p>
           <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
             <div className={`w-2 h-2 rounded-full mr-2 ${address ? 'bg-green-500' : 'bg-gray-400'}`}></div>
             {address ? 'Wallet Connected' : 'Wallet Disconnected'}
