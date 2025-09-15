@@ -56,31 +56,6 @@ export default function Home() {
             signatures, transactions, and custom events.
           </p>
         </div>
-
-        {/* Features List */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Features Demonstrated</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-700">Automatic Tracking</h3>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Wallet connection/disconnection</li>
-                <li>• Page view events</li>
-                <li>• User identification</li>
-                <li>• Error tracking</li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-gray-700">Manual Testing</h3>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Message signing</li>
-                <li>• Transaction submission</li>
-                <li>• Custom events</li>
-                <li>• Page events</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     </main>
   );

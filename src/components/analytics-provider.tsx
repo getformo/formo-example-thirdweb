@@ -1,30 +1,79 @@
 'use client';
 
-import { useEffect } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { FormoAnalyticsProvider, useFormo } from '@formo/analytics';
 
 interface AnalyticsProviderProps {
   children: React.ReactNode;
 }
 
+interface TrackingContextType {
+  isTrackingEnabled: boolean;
+  setTrackingEnabled: (enabled: boolean) => void;
+  trackEvent: (eventName: string, properties?: any) => void;
+}
+
+const TrackingContext = createContext<TrackingContextType | null>(null);
+
+export const useTracking = () => {
+  const context = useContext(TrackingContext);
+  if (!context) {
+    throw new Error('useTracking must be used within a TrackingProvider');
+  }
+  return context;
+};
+
 const formoWriteKey = process.env.NEXT_PUBLIC_FORMO_WRITE_KEY;
 
-function AnalyticsWrapper({ children }: AnalyticsProviderProps) {
+function TrackingProvider({ children }: AnalyticsProviderProps) {
   const formo = useFormo();
-
-  useEffect(() => {
-    if (formo) {
-      // Track page view on mount
-      formo.track('Page View', {
-        page: window.location.pathname,
-        url: window.location.href,
-        title: document.title,
-        timestamp: new Date().toISOString(),
-      });
+  const [isTrackingEnabled, setIsTrackingEnabled] = useState(() => {
+    // Check localStorage for user's tracking preference
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('formo-tracking-enabled');
+      return saved !== null ? JSON.parse(saved) : true; // Default to enabled
     }
-  }, [formo]);
+    return true;
+  });
 
-  return <>{children}</>;
+  // Save tracking preference to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('formo-tracking-enabled', JSON.stringify(isTrackingEnabled));
+    }
+  }, [isTrackingEnabled]);
+
+  const setTrackingEnabled = (enabled: boolean) => {
+    setIsTrackingEnabled(enabled);
+    if (formo) {
+      if (enabled) {
+        // Re-enable tracking and send a tracking resumed event
+        formo.track('Analytics Tracking Resumed', {
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        // Send final event before disabling
+        formo.track('Analytics Tracking Paused', {
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+  };
+
+  const trackEvent = useCallback((eventName: string, properties?: any) => {
+    if (formo && isTrackingEnabled) {
+      formo.track(eventName, properties);
+    }
+  }, [formo, isTrackingEnabled]);
+
+  // Note: Page views are automatically tracked by the Formo SDK
+  // No need to manually emit page view events
+
+  return (
+    <TrackingContext.Provider value={{ isTrackingEnabled, setTrackingEnabled, trackEvent }}>
+      {children}
+    </TrackingContext.Provider>
+  );
 }
 
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
@@ -45,7 +94,7 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
         },
       }}
     >
-      <AnalyticsWrapper>{children}</AnalyticsWrapper>
+      <TrackingProvider>{children}</TrackingProvider>
     </FormoAnalyticsProvider>
   );
 }
