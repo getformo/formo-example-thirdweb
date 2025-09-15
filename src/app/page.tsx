@@ -2,7 +2,6 @@
 
 import { ConnectWallet } from '@/components/connect-wallet';
 import { EventTester } from '@/components/event-tester';
-import { FormoAnalytics } from '@/components/formo-analytics';
 import { useAddress } from '@thirdweb-dev/react';
 
 export default function Home() {
@@ -30,7 +29,6 @@ export default function Home() {
           {/* Left Column */}
           <div className="space-y-6">
             <ConnectWallet />
-            <FormoAnalytics />
           </div>
 
           {/* Right Column */}

@@ -3,13 +3,11 @@
 import { useState } from 'react';
 import { useAddress, useSigner } from '@thirdweb-dev/react';
 import { useFormo } from '@formo/analytics';
-import { useTracking } from './analytics-provider';
 
 export function EventTester() {
   const address = useAddress();
   const signer = useSigner();
   const formo = useFormo();
-  const { trackEvent, isTrackingEnabled } = useTracking();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('Hello from Formo Analytics!');
   const [customEventName, setCustomEventName] = useState('Custom Test Event');
@@ -25,24 +23,9 @@ export function EventTester() {
       setIsLoading(true);
       const signature = await signer.signMessage(message);
       
-      const eventData = {
-        wallet_address: address,
-        message: message,
-        signature: signature,
-        timestamp: new Date().toISOString(),
-      };
-      
-      trackEvent('Message Signed', eventData);
-      
       alert('Message signed successfully!');
     } catch (error) {
       console.error('Failed to sign message:', error);
-      trackEvent('Signature Failed', {
-        wallet_address: address,
-        message: message,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      });
       alert('Failed to sign message');
     } finally {
       setIsLoading(false);
@@ -65,24 +48,9 @@ export function EventTester() {
         data: '0x',
       });
 
-      const eventData = {
-        wallet_address: address,
-        transaction_hash: tx.hash,
-        to: address,
-        value: '0',
-        timestamp: new Date().toISOString(),
-      };
-      
-      trackEvent('Transaction Sent', eventData);
-
       alert(`Transaction sent! Hash: ${tx.hash}`);
     } catch (error) {
       console.error('Failed to send transaction:', error);
-      trackEvent('Transaction Failed', {
-        wallet_address: address,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      });
       alert('Failed to send transaction');
     } finally {
       setIsLoading(false);
@@ -90,11 +58,6 @@ export function EventTester() {
   };
 
   const handleCustomEvent = () => {
-    if (!isTrackingEnabled) {
-      alert('Tracking is currently disabled. Enable tracking first to send custom events.');
-      return;
-    }
-
     try {
       const parsedData = JSON.parse(customEventData);
       const eventData = {
@@ -104,7 +67,9 @@ export function EventTester() {
         timestamp: new Date().toISOString(),
       };
       
-      trackEvent(customEventName, eventData);
+      if (formo) {
+        formo.track(customEventName, eventData);
+      }
       alert('Custom event sent!');
     } catch (error) {
       alert('Invalid JSON in custom event data');
